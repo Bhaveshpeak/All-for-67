@@ -2,22 +2,24 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+      - uses: actions/checkout@v4
+      - name: Check C source files
+        run: |
+          shopt -s nullglob
+          files=( *.c )
+          if (( ${#files[@]} == 0 )); then
+            echo "No C source files found"
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            echo "Checking ${file}"
+            gcc -std=c11 -Wall -Wextra -fsyntax-only "${file}"
+          done
